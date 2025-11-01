@@ -1,26 +1,32 @@
-import { ComputeEngine } from "https://cdn.jsdelivr.net/npm/@cortex-js/compute-engine@0.30.2/dist/compute-engine.min.esm.js";
 import { renderMathInElement } from "https://cdn.jsdelivr.net/npm/mathlive@0.107.1/mathlive.min.mjs";
 
-const ce = new ComputeEngine();
 
 let possibleFunctions = [
-  ["Sin", "xvalue"],
-  ["Cos", "xvalue"],
-  ["Power", "e", "xvalue"],
-  ["Multiply", "avalue", ["Power", "xvalue", "bvalue"]],
-  ["Sqrt", "xvalue"],
-  ["Ln", "xvalue"]
+  "sin(xvalue)",
+  "cos(xvalue)",
+  "e^(xvalue)",
+  "avalue*(xvalue)^(bvalue)",
+  "sqrt(xvalue)",
+  "log(xvalue)"
 ]
-function replaceInList(list, target, replacement) {
-    return list.map(item => Array.isArray(item) ? replaceInList(item, target, replacement) : (item === target ? replacement : item));
-}
 
-function chooseFunction(chainRule) {
-  let chosenFunc = possibleFunctions[Math.floor(Math.random()*possibleFunctions.length)]
+
+let possibleIntFunctions = [
+  "sin(xvalue)",
+  "cos(xvalue)",
+  "e^(xvalue)",
+  "avalue*(xvalue)^(bvalue)",
+  "sqrt(xvalue)",
+  "1/(xvalue)"
+]
+
+
+function chooseFunction(chainRule, funcList) {
+  let chosenFunc = funcList[Math.floor(Math.random()*funcList.length)];
   if (chainRule == true) {
-    chosenFunc = replaceInList(chosenFunc, "xvalue", chooseFunction(false));
+    chosenFunc = chosenFunc.replaceAll("xvalue", chooseFunction(false, funcList));
   } else {
-    chosenFunc = replaceInList(chosenFunc, "xvalue", "x");
+    chosenFunc = chosenFunc.replaceAll("xvalue", "x");
   }
   let aval = Math.floor(Math.random()*10)+1;
   while (aval > 10) {
@@ -30,36 +36,54 @@ function chooseFunction(chainRule) {
   while (bval > 10) {
     bval = Math.floor(Math.random()*10)+1;
   };
-  chosenFunc = replaceInList(chosenFunc, "avalue", aval);
-  chosenFunc = replaceInList(chosenFunc, "bvalue", bval);
+  chosenFunc = chosenFunc.replaceAll("avalue", aval);
+  chosenFunc = chosenFunc.replaceAll("bvalue", bval);
   return chosenFunc
 }
-let func = chooseFunction(true)
 
-let question = ce.box(func, {canonical: false});
-let answer = ce.box(["D",func,"x"]);
+
 const mf = document.getElementById('editor');
 const qs = document.getElementById('question');
 const rs = document.getElementById('response');
-qs.innerText = "Find the derivative of \\(" + question.toLatex({prettify: true}) + "\\)" 
-renderMathInElement("question");
-function switchQuestion() {
-  func = chooseFunction(true);
-  question = ce.box(func, {canonical: false});
-  answer = ce.box(["D",func,"x"]);
-  qs.innerText = "Find the derivative of \\(" + question.toLatex({prettify: true}) + "\\)" 
+
+let func = null;
+let answer = null;
+
+nerdamer.setFunction('ln', ['x'], 'log(x)');
+
+function generateDerivative () {
+  func = chooseFunction(true, possibleFunctions)
+  answer = nerdamer('diff('+func+')');
+  qs.innerText = "Find the derivative of \\(" + nerdamer.convertToLaTeX(func).toString() + "\\)" 
   renderMathInElement("question");
 }
 
+function generateIntegral () {
+  func = chooseFunction(false, possibleIntFunctions)
+  answer = nerdamer('integrate('+func+', x)');
+  qs.innerText = "Find the integral of \\(" + nerdamer.convertToLaTeX(func).toString() + "\\)";
+  renderMathInElement("question");
+}
+
+function switchQuestion() {
+  let type = document.querySelector('input[name="question_type"]:checked').value;
+  if (type == "derivative") {
+    generateDerivative()
+  }
+  else if (type == "integral") {
+    generateIntegral()
+  }
+}
+
 mf.addEventListener('change', (ev) => {
-  let resp = ce.parse(ev.target.value);
-  resp.evaluate().print();
-  answer.evaluate().print();
-  if (resp.evaluate().toString() == answer.evaluate().toString()) {
+  let resp = nerdamer(ev.target.getValue("ascii-math"));
+  if (resp.eq(answer.toString())) {
     rs.innerText = "Correct";
   } else {
-    rs.innerText = "Incorrect, answer was \\(" + answer.evaluate().toLatex() + "\\)";
+    rs.innerText = "Incorrect, answer was \\(" + nerdamer.convertToLaTeX(answer.toString()).toString() + "\\)";
     renderMathInElement("response");
   }
   switchQuestion()
 });
+
+switchQuestion()

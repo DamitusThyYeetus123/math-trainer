@@ -11,11 +11,16 @@
   </head>
   <body>
     <script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+    <script src="all.min.js"></script>
     <script type="module" src="main.js"></script>
     <div class="main">
       <p id="question"></p>
       <math-field id="editor" style="width:100%"></math-field>
       <p id="response"></p>
+      <input type="radio" id="derivative" name="question_type" value="derivative">
+      <label for="derivative">Derivative</label>
+      <input type="radio" id="integral" name="question_type" value="integral">
+      <label for="integral">Integral</label>
     </div>
   </body>
 </html>
