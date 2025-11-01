@@ -17,10 +17,18 @@
       <p id="question"></p>
       <math-field id="editor" style="width:100%"></math-field>
       <p id="response"></p>
-      <input type="radio" id="derivative" name="question_type" value="derivative">
-      <label for="derivative">Derivative</label>
-      <input type="radio" id="integral" name="question_type" value="integral">
-      <label for="integral">Integral</label>
+      <div id="options">
+        <input type="radio" id="derivative" name="question_type" value="derivative" checked>
+        <label for="derivative">Derivative</label>
+        <input type="radio" id="integral" name="question_type" value="integral">
+        <label for="integral">Integral</label>
+        <input type="checkbox" id="chain_rule" name="chain_rule" value="Chain Rule">
+        <label for="chain_rule">Use Chain Rule</label>
+        <input type="checkbox" id="product_rule" name="product_rule" value="Product Rule">
+        <label for="product_rule">Use Product Rule</label>
+        <div id="functions">
+        </div>
+      </div>
     </div>
   </body>
 </html>
